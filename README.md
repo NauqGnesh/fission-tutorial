@@ -27,25 +27,33 @@ helm install --version v1.17.0 --namespace $FISSION_NAMESPACE fission \
   --set serviceType=NodePort,routerServiceType=NodePort \
   fission-charts/fission-all;
 ```
+![install.gif](./assets/install.gif)
 
 #### Install CLI:
 i. macOS
 ```bash
-curl -Lo fission <https://github.com/fission/fission/releases/download/v1.17.0/fission-v1.17.0-darwin-amd64> \\
+curl -Lo fission <https://github.com/fission/fission/releases/download/v1.17.0/fission-v1.17.0-darwin-amd64> \
     && chmod +x fission && sudo mv fission /usr/local/bin/
 ```
 ii. Linux/WSL
 ```bash
-curl -Lo fission <https://github.com/fission/fission/releases/download/v1.17.0/fission-v1.17.0-linux-amd64> \\
+curl -Lo fission <https://github.com/fission/fission/releases/download/v1.17.0/fission-v1.17.0-linux-amd64> \
     && chmod +x fission && sudo mv fission /usr/local/bin/
 ```
 
 ## Usage
+
+#### Initialize spec
+```bash
+fission spec init
+```
+
 #### Create environment (Python)
 You can change `name` to something else. `image` must match the language you are using
 ```bash
 fission env create --spec --name python --image fission/python-env --builder fission/python-builder
 ```
+![spec.gif](./assets/spec_init.gif)
 
 #### Code
 Clone the repo with example code
@@ -72,8 +80,8 @@ This will register a function to your fission namespace
 * `--entrypoint` entrypoint of your code 
 
 ```bash
-fission function create --spec --name room --env python --src "room/*" --entrypoint room.main
-fission function create --spec --name lamp --env python --src "lamp/*" --entrypoint lamp.main
+fission function create --spec --name room --env python --src "room/*" --entrypoint room.main;
+fission function create --spec --name lamp --env python --src "lamp/*" --entrypoint lamp.main;
 ```
 
 #### Trigger
@@ -83,15 +91,16 @@ This will create a trigger to invoke your fission functions
 * `--function` name of function to be invoked 
 
 ```bash
-fission route create --spec --method GET --url /lamp --function lamp
-fission route create --spec --method GET --url /room --function room 
+fission route create --spec --method GET --url /lamp --function lamp;
+fission route create --spec --method GET --url /room --function room;
 ```
+![function&trigger.gif](./assets/function%26trigger.gif)
 
 Addtionally, minikube doesn't support external load balancer, so we need to forward ports. Set `<local port>` to a free port on your machine. *Note: minikube uses 8080 by default*
 
 ```bash
 export FISSION_ROUTER=$(minikube ip):$(kubectl -n fission get svc router -o jsonpath='{...nodePort}');
-kubectl --namespace fission port-forward $(kubectl --namespace fission get pod -l svc=router -o name) <local port>:8888 &;
+kubectl --namespace fission port-forward $(kubectl --namespace fission get pod -l svc=router -o name) <local port>:8888 &
 export FISSION_ROUTER=127.0.0.1:<local port>
 ```
 
@@ -99,12 +108,14 @@ export FISSION_ROUTER=127.0.0.1:<local port>
 ```bash
 fission spec validate
 ```
+![validate.gif](./assets/validate.gif)
 
 #### Deploy
 Use `--watch` to deploy continuously
 ```bash
 fission spec apply --wait 
 ```
+![deploy.gif](./assets/deploy.gif)
 
 
 ### Test 
@@ -113,11 +124,12 @@ To invoke a function directly
 ``` bash
 fission function test --name lamp
 ```
+![test.gif](./assets/test.gif)
 
 To invoke a function via trigger
 
 ``` bash
 curl http://$FISSION_ROUTER/lamp
 ```
-
+![trigger.gif](./assets/trigger.gif)
 
